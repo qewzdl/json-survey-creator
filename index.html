@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание опроса</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <main>
+        <section class="test-section">
+            <div class="block primary-block">
+                <h2>Создание опроса</h2>
+                <div class="labelsContainer">
+                    <label><span class="label-text">Название опроса</span><br><input type="text" id="surveyTitle" oninput="updateJSONDisplay()"></label>
+                    <label><span class="label-text">Ссылка на Google таблицу</span><br><input type="text" id="googleSheetLink" oninput="updateJSONDisplay()"></label>
+                </div>
+                <div class="buttonsContainer">
+                    <button onclick="addQuestion()">Добавить вопрос</button>
+                    <input type="file" id="jsonFileInput" accept=".json">
+                    <button class="file-load-btn" onclick="document.getElementById('jsonFileInput').click()">Импорт JSON</button>
+                    <button class="file-load-btn" onclick="downloadJSON()">Экспорт JSON</button>
+                </div> 
+            </div>
+            
+            <div id="questionsContainer" style="
+                display: grid;
+                gap: 10px;
+            "></div>
+        </section>
+        
+        <section class="block json-block display-section">
+            <pre id="jsonPreview"></pre>
+        </section>        
+    </main>
+    
+    <script src="./index.js"></script>
+</body>
+</html>
