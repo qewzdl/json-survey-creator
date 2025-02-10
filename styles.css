@@ -162,6 +162,7 @@ select {
     -moz-appearance: none;
 
     padding: 0 10px 0 10px;
+    background-color: white;
 }
 
 select:focus {
