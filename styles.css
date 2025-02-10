@@ -102,6 +102,7 @@ button {
 
 button:hover {
     background-color: var(--color-primary-hover);
+    cursor: pointer;
 }
 
 button:active {
