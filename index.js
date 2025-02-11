@@ -19,6 +19,9 @@ function removeQuestion(id) {
 }
 
 function addSubQuestion(questionId, optionValue) {
+    if (!questions[questionId].subQuestions) {
+        questions[questionId].subQuestions = {}; 
+    }
     questions[questionId].subQuestions[optionValue] = {
         text: '',
         type: 'FREE_TEXT',
@@ -30,7 +33,7 @@ function addSubQuestion(questionId, optionValue) {
 }
 
 function removeSubQuestion(questionId, optionValue) {
-    delete questions[questionId].subQuestions[optionValue];
+    delete questions[questionId].subQuestions[String(optionValue)];
     updateSubQuestionsDisplay(questionId);
     updateJSONDisplay();
 }
@@ -58,7 +61,6 @@ function updateQuestionsDisplay() {
                 </div>
                 <div class="buttonsContainer">
                     <button onclick="addOption(${index})" ${question.type === 'FREE_TEXT' ? 'style="display: none;"' : ''}>Добавить вариант ответа</button>
-                    <button onclick="addSubQuestion(${index}, 'Ответ после которого будет подвопрос')">Добавить подвопрос</button>
                     <button class="delete-btn" onclick="removeQuestion(${index})">Удалить вопрос</button>
                 </div>
                 <div class="options" id="options-${index}"></div>
@@ -105,7 +107,7 @@ function updateOptionsDisplay(questionId) {
         div.innerHTML = `
             <div class="block secondary-block answer-block">
                 <div class="labelsContainer answer-variant">
-                    <label><p class="numeration">Ответ ${index + 1}</p> <br>
+                    <label><p class="numeration">Вариант ${index + 1}</p> <br>
                         <input class="full-input" type="text" value="${option.value}" 
                         oninput="updateOption(${questionId}, ${index}, this.value)">
                     </label>
@@ -119,6 +121,7 @@ function updateOptionsDisplay(questionId) {
                         </select>
                     </label>
                     <div class="buttonsContainer">
+                        <button onclick="addSubQuestion(${questionId}, ${index})">Добавить подвопрос</button>
                         <button class="delete-btn" onclick="removeOption(${questionId}, ${index})">Удалить</button>
                     </div>
                 </div>
@@ -154,8 +157,9 @@ function updateSubQuestionsDisplay(questionId) {
     const container = document.getElementById(`subQuestions-${questionId}`);
     container.innerHTML = '';
 
-    for (let option in questions[questionId].subQuestions) {
-        const subQuestion = questions[questionId].subQuestions[option];
+    const subQuestions = questions[questionId].subQuestions || {};
+    for (let option in subQuestions) {
+        const subQuestion = subQuestions[option];
         const div = document.createElement('div');
         div.classList.add('subQuestion');
         div.id = `subQuestion-${questionId}-${option}`;
@@ -163,7 +167,7 @@ function updateSubQuestionsDisplay(questionId) {
         div.innerHTML = `
             <div class="block secondary-block sub-question-block">
                 <div class="labelsContainer">
-                    <label><p class="numeration">Подвопрос для варианта: ${option}</p> <br>
+                    <div class="numeration">Подвопрос для варианта ${Object.keys(subQuestions).indexOf(option) + 1}</div>
                     <input class="full-input" type="text" value="${subQuestion.text}" oninput="updateSubQuestionText(${questionId}, '${option}', this.value)"></label>
                     <label><span class="label-text">Тип подвопроса</span><br>
                         <select onchange="updateSubQuestionType(${questionId}, '${option}', this.value)">
@@ -173,7 +177,7 @@ function updateSubQuestionsDisplay(questionId) {
                     </label>
                 </div>
                 <div class="buttonsContainer">
-                    <button onclick="addSubQuestionOption(${questionId}, '${option}')">Добавить вариант ответа</button>
+                    <button onclick="addSubQuestionOption(${questionId}, '${option}')" ${subQuestion.type === 'FREE_TEXT' ? 'style="display: none;"' : ''}>Добавить вариант ответа</button>
                     <button class="delete-btn" onclick="removeSubQuestion(${questionId}, '${option}')">Удалить подвопрос</button>
                 </div>
                 <div class="options" id="subOptions-${questionId}-${option}"></div>
@@ -211,10 +215,16 @@ function addSubQuestionOption(questionId, option) {
     updateJSONDisplay();
 }
 
-function removeSubQuestionOption(questionId, option, optionIndex) {
-    questions[questionId].subQuestions[option].options.splice(optionIndex, 1);
-    updateSubQuestionOptionsDisplay(questionId, option);
-    updateJSONDisplay();
+function removeSubQuestionOption(questionId, optionIndex) {
+    const subQuestions = questions[questionId].subQuestions;
+    const optionKeys = Object.keys(subQuestions);
+    const option = optionKeys.find(opt => subQuestions[opt].options[optionIndex]);
+
+    if (option) {
+        subQuestions[option].options.splice(optionIndex, 1);
+        updateSubQuestionOptionsDisplay(questionId, option);
+        updateJSONDisplay();
+    }
 }
 
 function updateSubQuestionOptionsDisplay(questionId, option) {
@@ -241,7 +251,7 @@ function updateSubQuestionOptionsDisplay(questionId, option) {
                         </select>
                     </label>
                     <div class="buttonsContainer">
-                        <button class="delete-btn" onclick="removeSubQuestionOption(${questionId}, '${option}', ${optionIndex})">Удалить</button>
+                        <button class="delete-btn" onclick="removeSubQuestionOption(${questionId}, ${optionIndex})">Удалить</button>
                     </div>
                 </div>
             </div>
@@ -288,7 +298,10 @@ function importJSON(event) {
             document.getElementById('surveyTitle').value = importedData.type || '';
             document.getElementById('googleSheetLink').value = importedData.link || '';
             questions = importedData.questions || [];
-            updateQuestionsDisplay();
+            updateQuestionsDisplay(); 
+            questions.forEach((question, index) => {
+                updateSubQuestionsDisplay(index);
+            });
             updateJSONDisplay();
         } catch (error) {
             alert("Ошибка при загрузке JSON. Проверьте формат файла.");
@@ -303,7 +316,22 @@ function updateJSONDisplay() {
         link: document.getElementById('googleSheetLink').value,
         testing: false,
         initialized: false,
-        questions: questions
+        questions: questions.map(question => {
+            const updatedQuestion = { ...question };
+            
+            if (!updatedQuestion.subQuestions || Object.keys(updatedQuestion.subQuestions).length === 0) {
+                delete updatedQuestion.subQuestions;
+            } else {
+                updatedQuestion.subQuestions = Object.fromEntries(
+                    Object.entries(updatedQuestion.subQuestions).map(([key, value], index) => [
+                        `Вариант ${index + 1}`,
+                        value
+                    ])
+                );
+            }
+        
+            return updatedQuestion;
+        })        
     };
 
     document.getElementById('jsonPreview').textContent = JSON.stringify(survey, null, 4);
