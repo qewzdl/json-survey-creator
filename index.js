@@ -18,18 +18,6 @@ function removeQuestion(id) {
     updateJSONDisplay();
 }
 
-function addSubQuestion(questionId) {
-    questions[questionId].subQuestions.push({ text: '', options: [] });
-    updateSubQuestionsDisplay(questionId);
-    updateJSONDisplay();
-}
-
-function removeSubQuestion(questionId, subQuestionId) {
-    questions[questionId].subQuestions.splice(subQuestionId, 1);
-    updateSubQuestionsDisplay(questionId);
-    updateJSONDisplay();
-}
-
 function updateQuestionsDisplay() {
     const container = document.getElementById('questionsContainer');
     container.innerHTML = '';
@@ -52,12 +40,12 @@ function updateQuestionsDisplay() {
                     </label>
                 </div>
                 <div class="buttonsContainer">
-                    <button onclick="addOption(${index})">Добавить вариант ответа</button>
+                    <button onclick="addOption(${index})" ${question.type === 'FREE_TEXT' ? 'style="display: none;"' : ''}>Добавить вариант ответа</button>
                     <button onclick="addSubQuestion(${index})">Добавить подвопрос</button>
                     <button class="delete-btn" onclick="removeQuestion(${index})">Удалить вопрос</button>
                 </div>
                 <div class="options" id="options-${index}"></div>
-                <div class="subQuestionsContainer " id="subQuestions-${index}" style="display: grid; gap: 10px; margin-top: 10px;"></div>
+                <div class="subQuestionsContainer" id="subQuestions-${index}" style="display: grid; gap: 10px; margin-top: 10px;"></div>
             </div>
         `;
 
@@ -80,10 +68,13 @@ function updateQuestion(id, text) {
 
 function updateType(id, type) {
     questions[id].type = type;
+
     if (type === 'FREE_TEXT') {
         questions[id].options = [];
         document.getElementById(`options-${id}`).innerHTML = '';
     }
+
+    updateQuestionsDisplay(); 
     updateJSONDisplay();
 }
 
@@ -142,6 +133,18 @@ function updateAction(questionId, optionId, action) {
     updateJSONDisplay();
 }
 
+function addSubQuestion(questionId) {
+    questions[questionId].subQuestions.push({ text: '', options: [] });
+    updateSubQuestionsDisplay(questionId);
+    updateJSONDisplay();
+}
+
+function removeSubQuestion(questionId, subQuestionId) {
+    questions[questionId].subQuestions.splice(subQuestionId, 1);
+    updateSubQuestionsDisplay(questionId);
+    updateJSONDisplay();
+}
+
 function updateSubQuestionsDisplay(questionId) {
     const container = document.getElementById(`subQuestions-${questionId}`);
     container.innerHTML = '';
@@ -164,7 +167,7 @@ function updateSubQuestionsDisplay(questionId) {
                     </label>
                 </div>
                 <div class="buttonsContainer">
-                    <button onclick="addSubQuestionOption(${questionId}, ${subIndex})">Добавить вариант ответа</button>
+                    <button onclick="addSubQuestionOption(${questionId}, ${subIndex})" ${subQuestion.type === 'FREE_TEXT' ? 'style="display: none;"' : ''}>Добавить вариант ответа</button>
                     <button class="delete-btn" onclick="removeSubQuestion(${questionId}, ${subIndex})">Удалить подвопрос</button>
                 </div>
                 <div class="options" id="subOptions-${questionId}-${subIndex}"></div>
@@ -186,12 +189,16 @@ function updateSubQuestionText(questionId, subIndex, value) {
 
 function updateSubQuestionType(questionId, subIndex, type) {
     questions[questionId].subQuestions[subIndex].type = type;
+    
     if (type === 'FREE_TEXT') {
         questions[questionId].subQuestions[subIndex].options = [];
         document.getElementById(`subOptions-${questionId}-${subIndex}`).innerHTML = '';
     }
+
+    updateSubQuestionsDisplay(questionId);
     updateJSONDisplay();
 }
+
 
 function addSubQuestionOption(questionId, subIndex) {
     questions[questionId].subQuestions[subIndex].options.push({ value: '', action: '' });
