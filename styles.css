@@ -242,6 +242,7 @@ pre {
     border-radius: var(--block-radius);
     padding: 20px;
     box-sizing: border-box;
+    grid-column: 3;
 }
 
 .option-container {
@@ -275,6 +276,7 @@ pre {
 
 .visual-block {
     border-left: 1px dashed #ccc;
+    grid-column: 2;
 }
 
 .main-select-container {

@@ -132,11 +132,32 @@ function addOption(questionId) {
 }
 
 function removeOption(questionId, optionId) {
-    questions[questionId].options.splice(optionId, 1);
+    const question = questions[questionId];
+
+    const optionKey = `Вариант ${optionId + 1}`;
+    if (question.subQuestions && question.subQuestions[optionKey]) {
+        delete question.subQuestions[optionKey];
+    }
+
+    question.options.splice(optionId, 1);
+
+    const updatedSubQuestions = {};
+    question.options.forEach((_, index) => {
+        const oldKey = `Вариант ${index + 2}`;
+        const newKey = `Вариант ${index + 1}`;
+        if (question.subQuestions[oldKey]) {
+            updatedSubQuestions[newKey] = question.subQuestions[oldKey];
+        }
+    });
+
+    question.subQuestions = updatedSubQuestions;
+
     updateOptionsDisplay(questionId);
+    updateSubQuestionsDisplay(questionId);
     updateJSONDisplay();
     saveToLocalStorage();
 }
+
 
 function updateOption(questionId, optionId, value) {
     questions[questionId].options[optionId].value = value;
@@ -188,7 +209,14 @@ function updateSubQuestionsDisplay(questionId) {
     container.innerHTML = '';
 
     const subQuestions = questions[questionId].subQuestions || {};
-    Object.keys(subQuestions).forEach((optionKey, index) => {
+    
+    const sortedKeys = Object.keys(subQuestions).sort((a, b) => {
+        const numA = parseInt(a.match(/\d+/)?.[0]) || 0;
+        const numB = parseInt(b.match(/\d+/)?.[0]) || 0;
+        return numA - numB;
+    });
+
+    sortedKeys.forEach((optionKey, index) => {
         const subQuestion = subQuestions[optionKey];
         const div = document.createElement('div');
         div.classList.add('subQuestion');
@@ -196,7 +224,6 @@ function updateSubQuestionsDisplay(questionId) {
 
         div.innerHTML = `
             <div class="subQuestion-container">
-                <div></div>
                 <div class="visual-block"></div>
                 <div class="block secondary-block sub-question-block">
                     <div class="labelsContainer">
@@ -305,13 +332,11 @@ function updateSubQuestionOptionsDisplay(questionId, option) {
     });
 }
 
-
 function updateSubQuestionOption(questionId, option, optionIndex, value) {
     questions[questionId].subQuestions[option].options[optionIndex].value = value;
     updateJSONDisplay();
     saveToLocalStorage();
 }
-
 
 function updateSubQuestionAction(questionId, option, optionIndex, action) {
     questions[questionId].subQuestions[option].options[optionIndex].action = action;
