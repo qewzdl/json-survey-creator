@@ -102,34 +102,48 @@ function updateOptionsDisplay(questionId) {
     container.innerHTML = '';
 
     questions[questionId].options.forEach((option, index) => {
+        const isLast = index === questions[questionId].options.length - 1;
+        
         const div = document.createElement('div');
         div.id = `option-${questionId}-${index}`;
         div.innerHTML = `
-            <div class="block secondary-block answer-block">
-                <div class="labelsContainer answer-variant">
-                    <label><p class="numeration">Вариант ${index + 1}</p> <br>
-                        <input class="full-input" type="text" value="${option.value}" 
-                        oninput="updateOption(${questionId}, ${index}, this.value)">
-                    </label>
+            <div class="option-container">
+                <div class="visual-container">
+                    ${isLast ? '<div class="visual-block-3"></div>' : '<div class="visual-block-1"></div><div class="visual-block-2"></div>'}
                 </div>
-                <div class="answer-block-footer">
-                    <label><span class="label-text">Действие</span><br>
-                        <select onchange="updateAction(${questionId}, ${index}, this.value)">
-                            <option value="" ${option.action === '' ? 'selected' : ''}>Обычный</option>
-                            <option value="SKIP" ${option.action === 'SKIP' ? 'selected' : ''}>SKIP</option>
-                            <option value="FLUSH" ${option.action === 'FLUSH' ? 'selected' : ''}>FLUSH</option>
-                        </select>
-                    </label>
-                    <div class="buttonsContainer">
-                        <button onclick="addSubQuestion(${questionId}, ${index})">Добавить подвопрос</button>
-                        <button class="delete-btn" onclick="removeOption(${questionId}, ${index})">Удалить</button>
+                <div class="block secondary-block answer-block three-block">
+                    <div class="labelsContainer answer-variant">
+                        <label><p class="numeration">Вариант ${index + 1}</p> <br>
+                            <input class="full-input" type="text" value="${option.value}" 
+                            oninput="updateOption(${questionId}, ${index}, this.value)">
+                        </label>
                     </div>
+                    <div class="answer-block-footer">
+                        <label><span class="label-text">Действие</span><br>
+                            <select onchange="updateAction(${questionId}, ${index}, this.value)">
+                                <option value="" ${option.action === '' ? 'selected' : ''}>Обычный</option>
+                                <option value="SKIP" ${option.action === 'SKIP' ? 'selected' : ''}>SKIP</option>
+                                <option value="FLUSH" ${option.action === 'FLUSH' ? 'selected' : ''}>FLUSH</option>
+                            </select>
+                        </label>
+                        <div class="buttonsContainer">
+                            <button onclick="addSubQuestion(${questionId}, ${index})">Добавить подвопрос</button>
+                            <button class="delete-btn" onclick="removeOption(${questionId}, ${index})">Удалить</button>
+                        </div>
+                    </div>
+                    <!-- Add sub-question container inside the answer-block -->
+                    <div class="subQuestionsContainer" id="subQuestions-${questionId}-${index}" style="display: grid; gap: 10px; margin-top: 10px;"></div>
                 </div>
             </div>
         `;
         container.appendChild(div);
+
+        if (questionId in questions && option in questions[questionId].subQuestions) {
+            updateSubQuestionsDisplay(questionId, index);
+        }
     });
 }
+
 
 function addOption(questionId) {
     questions[questionId].options.push({ value: '', action: '' });
