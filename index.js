@@ -142,16 +142,22 @@ function updateAction(questionId, optionId, action) {
     updateJSONDisplay();
 }
 
-function addSubQuestion(questionId, optionValue) {
+function addSubQuestion(questionId, optionIndex) {
     if (!questions[questionId].subQuestions) {
-        questions[questionId].subQuestions = {}; 
+        questions[questionId].subQuestions = {};
     }
-    questions[questionId].subQuestions[optionValue] = {
-        text: '',
-        type: 'CHOICE',
-        level: 'SUB',
-        options: []
-    };
+
+    let optionKey = `Вариант ${optionIndex + 1}`;
+
+    if (!questions[questionId].subQuestions[optionKey]) {
+        questions[questionId].subQuestions[optionKey] = {
+            text: '',
+            type: 'CHOICE',
+            level: 'SUB',
+            options: []
+        };
+    }
+
     updateSubQuestionsDisplay(questionId);
     updateJSONDisplay();
 }
@@ -172,11 +178,11 @@ function updateSubQuestionsDisplay(questionId) {
     container.innerHTML = '';
 
     const subQuestions = questions[questionId].subQuestions || {};
-    for (let option in subQuestions) {
-        const subQuestion = subQuestions[option];
+    Object.keys(subQuestions).forEach((optionKey, index) => {
+        const subQuestion = subQuestions[optionKey];
         const div = document.createElement('div');
         div.classList.add('subQuestion');
-        div.id = `subQuestion-${questionId}-${option}`;
+        div.id = `subQuestion-${questionId}-${optionKey}`;
 
         div.innerHTML = `
             <div class="subQuestion-container">
@@ -184,29 +190,29 @@ function updateSubQuestionsDisplay(questionId) {
                 <div class="visual-block"></div>
                 <div class="block secondary-block sub-question-block">
                     <div class="labelsContainer">
-                        <div class="numeration">Подвопрос для варианта ${Object.keys(subQuestions).indexOf(option) + 1}</div>
-                        <input class="full-input" type="text" value="${subQuestion.text}" oninput="updateSubQuestionText(${questionId}, '${option}', this.value)"></label>
+                        <div class="numeration">Подвопрос для ${optionKey}</div>
+                        <input class="full-input" type="text" value="${subQuestion.text}" oninput="updateSubQuestionText(${questionId}, '${optionKey}', this.value)">
                         <label><span class="label-text">Тип подвопроса</span><br>
-                            <select onchange="updateSubQuestionType(${questionId}, '${option}', this.value)">
+                            <select onchange="updateSubQuestionType(${questionId}, '${optionKey}', this.value)">
                                 <option value="CHOICE" ${subQuestion.type === 'CHOICE' ? 'selected' : ''}>CHOICE</option>
                                 <option value="FREE_TEXT" ${subQuestion.type === 'FREE_TEXT' ? 'selected' : ''}>FREE_TEXT</option>
                             </select>
                         </label>
                     </div>
                     <div class="buttonsContainer">
-                        <button onclick="addSubQuestionOption(${questionId}, '${option}')" ${subQuestion.type === 'FREE_TEXT' ? 'style="display: none;"' : ''}>Добавить вариант ответа</button>
-                        <button class="delete-btn" onclick="removeSubQuestion(${questionId}, '${option}')">Удалить подвопрос</button>
+                        <button onclick="addSubQuestionOption(${questionId}, '${optionKey}')" ${subQuestion.type === 'FREE_TEXT' ? 'style="display: none;"' : ''}>Добавить вариант ответа</button>
+                        <button class="delete-btn" onclick="removeSubQuestion(${questionId}, '${optionKey}')">Удалить подвопрос</button>
                     </div>
-                    <div class="options" id="subOptions-${questionId}-${option}"></div>
+                    <div class="options" id="subOptions-${questionId}-${optionKey}"></div>
                 </div>
             </div>
         `;
         container.appendChild(div);
 
         if (subQuestion.type === 'CHOICE') {
-            updateSubQuestionOptionsDisplay(questionId, option);
+            updateSubQuestionOptionsDisplay(questionId, optionKey);
         }
-    }
+    });
 }
 
 function updateSubQuestionText(questionId, option, value) {
@@ -280,7 +286,6 @@ function updateSubQuestionOptionsDisplay(questionId, option) {
 }
 
 function updateSubQuestionOption(questionId, option, optionIndex, value) {
-    // Сохраняем значение опции подвопроса в соответствующем месте
     questions[questionId].subQuestions[option].options[optionIndex].value = value;
     updateJSONDisplay();
 }
