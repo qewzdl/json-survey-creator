@@ -15,6 +15,22 @@
                     <label><span class="label-text">Название опроса</span><br><input type="text" id="surveyTitle" oninput="updateJSONDisplay()"></label>
                     <label><span class="label-text">Ссылка на Google таблицу</span><br><input type="text" id="googleSheetLink" oninput="updateJSONDisplay()"></label>
                 </div>
+                <div class="main-select-container">
+                    <div class="main-select-block">
+                        <div><span class="label-text">testing</span></div>
+                        <select class="main-select">
+                            <option>true</option>
+                            <option>false</option>
+                        </select>
+                    </div>
+                    <div class="main-select-block">
+                        <div><span class="label-text">initialized</span></div>
+                        <select class="main-select">
+                            <option>true</option>
+                            <option>false</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="buttonsContainer">
                     <button onclick="addQuestion()">Добавить вопрос</button>
                     <input type="file" id="jsonFileInput" accept=".json">

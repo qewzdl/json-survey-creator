@@ -111,8 +111,6 @@ function updateOptionsDisplay(questionId) {
                             <button class="delete-btn" onclick="removeOption(${questionId}, ${index})">Удалить</button>
                         </div>
                     </div>
-                    <!-- This is where the subQuestionContainer is added for each option -->
-                    <div class="subQuestionContainer" id="subQuestionContainer-${questionId}-${index}" style="display: grid; gap: 10px; margin-top: 10px;"></div>
                 </div>
             </div>
         `;
@@ -347,8 +345,8 @@ function updateJSONDisplay() {
     const survey = {
         type: document.getElementById('surveyTitle').value,
         link: document.getElementById('googleSheetLink').value,
-        testing: false,
-        initialized: false,
+        testing: document.querySelector('.main-select-block:nth-child(1) select').value,
+        initialized: document.querySelector('.main-select-block:nth-child(2) select').value,
         questions: questions.map(question => {
             const updatedQuestion = { ...question };
 
@@ -364,6 +362,10 @@ function updateJSONDisplay() {
 
     document.getElementById('jsonPreview').textContent = JSON.stringify(survey, null, 4);
 }
+
+document.querySelectorAll('.main-select').forEach(select => {
+    select.addEventListener('change', updateJSONDisplay);
+});
 
 function checkQuestionsContainer() {
     const questionsContainer = document.getElementById('questionsContainer');

@@ -275,6 +275,17 @@ pre {
     border-left: 1px dashed #ccc;
 }
 
+.main-select-container {
+    width: 50%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap);
+}
+
+.main-select {
+    width: 100%;
+}
+
 @media (max-width: 900px) {
     main {
         display: grid;
@@ -303,6 +314,9 @@ pre {
 @media (max-width: 700px) {
     select {
         width: 50%;
+    }
+    .main-select-container {
+        width: 100%;
     }
 }
 
