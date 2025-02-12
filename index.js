@@ -85,7 +85,6 @@ function updateType(id, type) {
     saveToLocalStorage();
 }
 
-
 function updateOptionsDisplay(questionId) {
     const container = document.getElementById(`options-${questionId}`);
     container.innerHTML = '';
