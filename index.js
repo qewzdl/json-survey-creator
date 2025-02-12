@@ -254,25 +254,31 @@ function removeSubQuestionOption(questionId, optionIndex) {
 
 function updateSubQuestionOptionsDisplay(questionId, option) {
     const container = document.getElementById(`subOptions-${questionId}-${option}`);
+    
+    const savedOptions = questions[questionId].subQuestions[option].options.map((opt, index) => ({
+        value: opt.value,
+        action: opt.action
+    }));
+
     container.innerHTML = '';
 
-    questions[questionId].subQuestions[option].options.forEach((option, optionIndex) => {
+    savedOptions.forEach((opt, optionIndex) => {
         const div = document.createElement('div');
         div.id = `subOption-${questionId}-${option}-${optionIndex}`;
         div.innerHTML = `
             <div class="block secondary-block answer-block">
                 <div class="labelsContainer answer-variant">
                     <label><p class="numeration">Вариант ${optionIndex + 1}</p> <br>
-                        <input class="full-input" type="text" value="${option.value}" 
+                        <input class="full-input" type="text" value="${opt.value}" 
                         oninput="updateSubQuestionOption(${questionId}, '${option}', ${optionIndex}, this.value)">
                     </label>
                 </div>
                 <div class="answer-block-footer">
                     <label><span class="label-text">Действие</span><br>
                         <select onchange="updateSubQuestionAction(${questionId}, '${option}', ${optionIndex}, this.value)">
-                            <option value="" ${option.action === '' ? 'selected' : ''}>Обычный</option>
-                            <option value="SKIP" ${option.action === 'SKIP' ? 'selected' : ''}>SKIP</option>
-                            <option value="FLUSH" ${option.action === 'FLUSH' ? 'selected' : ''}>FLUSH</option>
+                            <option value="" ${opt.action === '' ? 'selected' : ''}>Обычный</option>
+                            <option value="SKIP" ${opt.action === 'SKIP' ? 'selected' : ''}>SKIP</option>
+                            <option value="FLUSH" ${opt.action === 'FLUSH' ? 'selected' : ''}>FLUSH</option>
                         </select>
                     </label>
                     <div class="buttonsContainer">
@@ -284,6 +290,7 @@ function updateSubQuestionOptionsDisplay(questionId, option) {
         container.appendChild(div);
     });
 }
+
 
 function updateSubQuestionOption(questionId, option, optionIndex, value) {
     questions[questionId].subQuestions[option].options[optionIndex].value = value;
@@ -344,18 +351,13 @@ function updateJSONDisplay() {
         initialized: false,
         questions: questions.map(question => {
             const updatedQuestion = { ...question };
-            
+
             if (!updatedQuestion.subQuestions || Object.keys(updatedQuestion.subQuestions).length === 0) {
                 delete updatedQuestion.subQuestions;
             } else {
-                updatedQuestion.subQuestions = Object.fromEntries(
-                    Object.entries(updatedQuestion.subQuestions).map(([key, value], index) => [
-                        `Вариант ${index + 1}`,
-                        value
-                    ])
-                );
+                updatedQuestion.subQuestions = { ...question.subQuestions };
             }
-        
+
             return updatedQuestion;
         })        
     };
