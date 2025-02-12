@@ -75,13 +75,16 @@ function updateType(id, type) {
 
     if (type === 'FREE_TEXT') {
         questions[id].options = [];
+        questions[id].subQuestions = {};
         document.getElementById(`options-${id}`).innerHTML = '';
+        document.getElementById(`subQuestions-${id}`).innerHTML = ''; 
     }
 
     updateQuestionsDisplay(); 
     updateJSONDisplay();
     saveToLocalStorage();
 }
+
 
 function updateOptionsDisplay(questionId) {
     const container = document.getElementById(`options-${questionId}`);
