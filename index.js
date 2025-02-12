@@ -134,28 +134,11 @@ function addOption(questionId) {
 }
 
 function removeOption(questionId, optionId) {
-    const question = questions[questionId];
+    let question = questions[questionId];
+    let removedKey = question.options[optionId].value;
 
-    const removedKey = `Вариант ${optionId + 1}`;
     delete question.subQuestions[removedKey];
-
     question.options.splice(optionId, 1);
-
-    const updatedSubQuestions = {};
-    Object.keys(question.subQuestions).forEach((oldKey) => {
-        const match = oldKey.match(/\d+/);
-        if (match) {
-            const oldIndex = parseInt(match[0], 10);
-            if (oldIndex > optionId + 1) { 
-                const newKey = `Вариант ${oldIndex - 1}`;
-                updatedSubQuestions[newKey] = question.subQuestions[oldKey];
-            } else {
-                updatedSubQuestions[oldKey] = question.subQuestions[oldKey];
-            }
-        }
-    });
-
-    question.subQuestions = updatedSubQuestions;
 
     updateOptionsDisplay(questionId);
     updateSubQuestionsDisplay(questionId);
@@ -163,10 +146,20 @@ function removeOption(questionId, optionId) {
     saveToLocalStorage();
 }
 
-
-
 function updateOption(questionId, optionId, value) {
-    questions[questionId].options[optionId].value = value;
+    const question = questions[questionId];
+    const oldKey = Object.keys(question.subQuestions).find(
+        key => key === question.options[optionId].value
+    );
+
+    question.options[optionId].value = value;
+
+    if (oldKey) {
+        question.subQuestions[value] = question.subQuestions[oldKey];
+        delete question.subQuestions[oldKey];
+    }
+
+    updateSubQuestionsDisplay(questionId);
     updateJSONDisplay();
     saveToLocalStorage();
 }
@@ -182,10 +175,10 @@ function addSubQuestion(questionId, optionIndex) {
         questions[questionId].subQuestions = {};
     }
 
-    let optionKey = `Вариант ${optionIndex + 1}`;
+    let optionValue = questions[questionId].options[optionIndex].value || `option_${optionIndex}`;
 
-    if (!questions[questionId].subQuestions[optionKey]) {
-        questions[questionId].subQuestions[optionKey] = {
+    if (!questions[questionId].subQuestions[optionValue]) {
+        questions[questionId].subQuestions[optionValue] = {
             text: '',
             type: 'CHOICE',
             level: 'SUB',
