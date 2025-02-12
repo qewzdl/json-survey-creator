@@ -1,7 +1,9 @@
 let questions = [];
 
 document.getElementById('jsonFileInput').addEventListener('change', importJSON);
+
 document.addEventListener("DOMContentLoaded", function() {
+    loadFromLocalStorage();
     updateQuestionsDisplay();
     updateJSONDisplay();
 });
@@ -10,12 +12,14 @@ function addQuestion() {
     questions.push({ text: '', type: 'CHOICE', level: 'MAIN', options: [], subQuestions: {} });
     updateQuestionsDisplay();
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function removeQuestion(id) {
     questions.splice(id, 1);
     updateQuestionsDisplay();
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function updateQuestionsDisplay() {
@@ -63,6 +67,7 @@ function updateQuestionsDisplay() {
 function updateQuestion(id, text) {
     questions[id].text = text;
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function updateType(id, type) {
@@ -75,6 +80,7 @@ function updateType(id, type) {
 
     updateQuestionsDisplay(); 
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function updateOptionsDisplay(questionId) {
@@ -122,22 +128,26 @@ function addOption(questionId) {
     questions[questionId].options.push({ value: '', action: '' });
     updateOptionsDisplay(questionId);
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function removeOption(questionId, optionId) {
     questions[questionId].options.splice(optionId, 1);
     updateOptionsDisplay(questionId);
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function updateOption(questionId, optionId, value) {
     questions[questionId].options[optionId].value = value;
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function updateAction(questionId, optionId, action) {
     questions[questionId].options[optionId].action = action;
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function addSubQuestion(questionId, optionIndex) {
@@ -158,6 +168,7 @@ function addSubQuestion(questionId, optionIndex) {
 
     updateSubQuestionsDisplay(questionId);
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function removeSubQuestion(questionId, option) {
@@ -169,6 +180,7 @@ function removeSubQuestion(questionId, option) {
     delete questions[questionId].subQuestions[String(option)]; 
     updateSubQuestionsDisplay(questionId); 
     updateJSONDisplay(); 
+    saveToLocalStorage();
 }
 
 function updateSubQuestionsDisplay(questionId) {
@@ -216,6 +228,7 @@ function updateSubQuestionsDisplay(questionId) {
 function updateSubQuestionText(questionId, option, value) {
     questions[questionId].subQuestions[option].text = value;
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function updateSubQuestionType(questionId, option, type) {
@@ -228,12 +241,14 @@ function updateSubQuestionType(questionId, option, type) {
 
     updateSubQuestionsDisplay(questionId);
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function addSubQuestionOption(questionId, option) {
     questions[questionId].subQuestions[option].options.push({ value: '', action: '' });
     updateSubQuestionOptionsDisplay(questionId, option);
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function removeSubQuestionOption(questionId, optionIndex) {
@@ -248,6 +263,7 @@ function removeSubQuestionOption(questionId, optionIndex) {
 
     updateSubQuestionsDisplay(questionId);
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function updateSubQuestionOptionsDisplay(questionId, option) {
@@ -293,12 +309,14 @@ function updateSubQuestionOptionsDisplay(questionId, option) {
 function updateSubQuestionOption(questionId, option, optionIndex, value) {
     questions[questionId].subQuestions[option].options[optionIndex].value = value;
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 
 function updateSubQuestionAction(questionId, option, optionIndex, action) {
     questions[questionId].subQuestions[option].options[optionIndex].action = action;
     updateJSONDisplay();
+    saveToLocalStorage();
 }
 
 function downloadJSON() {
@@ -377,3 +395,43 @@ function checkQuestionsContainer() {
         testSection.style.gap = '10px';
     }
 }
+
+function saveToLocalStorage() {
+    localStorage.setItem('surveyData', JSON.stringify({
+        type: document.getElementById('surveyTitle').value,
+        link: document.getElementById('googleSheetLink').value,
+        testing: document.querySelector('.main-select-block:nth-child(1) select').value,
+        initialized: document.querySelector('.main-select-block:nth-child(2) select').value,
+        questions: questions
+    }));
+}
+
+function loadFromLocalStorage() {
+    const savedData = localStorage.getItem('surveyData');
+    if (savedData) {
+        try {
+            const importedData = JSON.parse(savedData);
+            document.getElementById('surveyTitle').value = importedData.type || '';
+            document.getElementById('googleSheetLink').value = importedData.link || '';
+            questions = importedData.questions || [];
+            updateQuestionsDisplay();
+            questions.forEach((_, index) => {
+                updateSubQuestionsDisplay(index);
+            });
+            updateJSONDisplay();
+        } catch (error) {
+            console.error("Ошибка загрузки данных из LocalStorage:", error);
+        }
+    }
+}
+
+document.querySelector('.clear-btn').addEventListener('click', function() {
+    document.getElementById('surveyTitle').value = '';
+    document.getElementById('googleSheetLink').value = '';
+    document.querySelector('.main-select-block:nth-child(1) select').value = 'false';
+    document.querySelector('.main-select-block:nth-child(2) select').value = 'false';
+    questions = [];
+    updateQuestionsDisplay();
+    updateJSONDisplay();
+    saveToLocalStorage();
+});

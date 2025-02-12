@@ -15,6 +15,7 @@
 
     --color-delete: rgb(226, 41, 41);
     --color-delete-active: rgb(200, 35, 35);
+    --color-delete-dark: rgb(155, 26, 26);
 }
 
 main h2 {
@@ -25,7 +26,7 @@ main h2 {
 body { 
     font-family: Arial, sans-serif; 
     margin: 20px; 
-    background-color: rgb(235, 235, 235);
+    background-color: rgb(230, 230, 230);
 }
 
 .questionsContainer {
@@ -54,6 +55,7 @@ body {
     width: var(--desktop-width);
     display: grid;
     box-sizing: border-box;
+    position: relative;
 }
 
 .secondary-block {
@@ -286,6 +288,12 @@ pre {
     width: 100%;
 }
 
+.clear-btn {
+    position: absolute;
+    right: var(--primary-padding);
+    top: var(--primary-padding);
+}
+
 @media (max-width: 900px) {
     main {
         display: grid;
@@ -327,5 +335,11 @@ pre {
     }
     select {
         width: 100%;
+    }
+}
+
+@media (max-width: 450px) {
+    .clear-btn {
+        position:static
     }
 }

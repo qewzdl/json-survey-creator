@@ -11,6 +11,7 @@
         <section class="test-section">
             <div class="block primary-block">
                 <h2>Создание опроса</h2>
+                <button class="clear-btn">Очистить</button>
                 <div class="labelsContainer">
                     <label><span class="label-text">Название опроса</span><br><input type="text" id="surveyTitle" oninput="updateJSONDisplay()"></label>
                     <label><span class="label-text">Ссылка на Google таблицу</span><br><input type="text" id="googleSheetLink" oninput="updateJSONDisplay()"></label>
@@ -19,15 +20,15 @@
                     <div class="main-select-block">
                         <div><span class="label-text">testing</span></div>
                         <select class="main-select">
-                            <option>true</option>
                             <option>false</option>
+                            <option>true</option>
                         </select>
                     </div>
                     <div class="main-select-block">
                         <div><span class="label-text">initialized</span></div>
                         <select class="main-select">
-                            <option>true</option>
                             <option>false</option>
+                            <option>true</option>
                         </select>
                     </div>
                 </div>
@@ -36,7 +37,8 @@
                     <input type="file" id="jsonFileInput" accept=".json">
                     <button class="file-load-btn" onclick="document.getElementById('jsonFileInput').click()">Импорт JSON</button>
                     <button class="file-load-btn" onclick="downloadJSON()">Экспорт JSON</button>
-                </div> 
+                    
+                </div>
             </div>
             
             <div id="questionsContainer" style="
