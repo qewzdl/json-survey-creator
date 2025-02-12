@@ -18,26 +18,6 @@ function removeQuestion(id) {
     updateJSONDisplay();
 }
 
-function addSubQuestion(questionId, optionValue) {
-    if (!questions[questionId].subQuestions) {
-        questions[questionId].subQuestions = {}; 
-    }
-    questions[questionId].subQuestions[optionValue] = {
-        text: '',
-        type: 'FREE_TEXT',
-        level: 'SUB',
-        options: []
-    };
-    updateSubQuestionsDisplay(questionId);
-    updateJSONDisplay();
-}
-
-function removeSubQuestion(questionId, optionValue) {
-    delete questions[questionId].subQuestions[String(optionValue)];
-    updateSubQuestionsDisplay(questionId);
-    updateJSONDisplay();
-}
-
 function updateQuestionsDisplay() {
     const container = document.getElementById('questionsContainer');
     container.innerHTML = '';
@@ -131,19 +111,14 @@ function updateOptionsDisplay(questionId) {
                             <button class="delete-btn" onclick="removeOption(${questionId}, ${index})">Удалить</button>
                         </div>
                     </div>
-                    <!-- Add sub-question container inside the answer-block -->
-                    <div class="subQuestionsContainer" id="subQuestions-${questionId}-${index}" style="display: grid; gap: 10px; margin-top: 10px;"></div>
+                    <!-- This is where the subQuestionContainer is added for each option -->
+                    <div class="subQuestionContainer" id="subQuestionContainer-${questionId}-${index}" style="display: grid; gap: 10px; margin-top: 10px;"></div>
                 </div>
             </div>
         `;
         container.appendChild(div);
-
-        if (questionId in questions && option in questions[questionId].subQuestions) {
-            updateSubQuestionsDisplay(questionId, index);
-        }
     });
 }
-
 
 function addOption(questionId) {
     questions[questionId].options.push({ value: '', action: '' });
@@ -167,6 +142,31 @@ function updateAction(questionId, optionId, action) {
     updateJSONDisplay();
 }
 
+function addSubQuestion(questionId, optionValue) {
+    if (!questions[questionId].subQuestions) {
+        questions[questionId].subQuestions = {}; 
+    }
+    questions[questionId].subQuestions[optionValue] = {
+        text: '',
+        type: 'CHOICE',
+        level: 'SUB',
+        options: []
+    };
+    updateSubQuestionsDisplay(questionId);
+    updateJSONDisplay();
+}
+
+function removeSubQuestion(questionId, option) {
+    const subQuestion = questions[questionId].subQuestions[option];
+    if (subQuestion) {
+        subQuestion.options = []; 
+    }
+
+    delete questions[questionId].subQuestions[String(option)]; 
+    updateSubQuestionsDisplay(questionId); 
+    updateJSONDisplay(); 
+}
+
 function updateSubQuestionsDisplay(questionId) {
     const container = document.getElementById(`subQuestions-${questionId}`);
     container.innerHTML = '';
@@ -179,25 +179,28 @@ function updateSubQuestionsDisplay(questionId) {
         div.id = `subQuestion-${questionId}-${option}`;
 
         div.innerHTML = `
-            <div class="block secondary-block sub-question-block">
-                <div class="labelsContainer">
-                    <div class="numeration">Подвопрос для варианта ${Object.keys(subQuestions).indexOf(option) + 1}</div>
-                    <input class="full-input" type="text" value="${subQuestion.text}" oninput="updateSubQuestionText(${questionId}, '${option}', this.value)"></label>
-                    <label><span class="label-text">Тип подвопроса</span><br>
-                        <select onchange="updateSubQuestionType(${questionId}, '${option}', this.value)">
-                            <option value="CHOICE" ${subQuestion.type === 'CHOICE' ? 'selected' : ''}>CHOICE</option>
-                            <option value="FREE_TEXT" ${subQuestion.type === 'FREE_TEXT' ? 'selected' : ''}>FREE_TEXT</option>
-                        </select>
-                    </label>
+            <div class="subQuestion-container">
+                <div></div>
+                <div class="visual-block"></div>
+                <div class="block secondary-block sub-question-block">
+                    <div class="labelsContainer">
+                        <div class="numeration">Подвопрос для варианта ${Object.keys(subQuestions).indexOf(option) + 1}</div>
+                        <input class="full-input" type="text" value="${subQuestion.text}" oninput="updateSubQuestionText(${questionId}, '${option}', this.value)"></label>
+                        <label><span class="label-text">Тип подвопроса</span><br>
+                            <select onchange="updateSubQuestionType(${questionId}, '${option}', this.value)">
+                                <option value="CHOICE" ${subQuestion.type === 'CHOICE' ? 'selected' : ''}>CHOICE</option>
+                                <option value="FREE_TEXT" ${subQuestion.type === 'FREE_TEXT' ? 'selected' : ''}>FREE_TEXT</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="buttonsContainer">
+                        <button onclick="addSubQuestionOption(${questionId}, '${option}')" ${subQuestion.type === 'FREE_TEXT' ? 'style="display: none;"' : ''}>Добавить вариант ответа</button>
+                        <button class="delete-btn" onclick="removeSubQuestion(${questionId}, '${option}')">Удалить подвопрос</button>
+                    </div>
+                    <div class="options" id="subOptions-${questionId}-${option}"></div>
                 </div>
-                <div class="buttonsContainer">
-                    <button onclick="addSubQuestionOption(${questionId}, '${option}')" ${subQuestion.type === 'FREE_TEXT' ? 'style="display: none;"' : ''}>Добавить вариант ответа</button>
-                    <button class="delete-btn" onclick="removeSubQuestion(${questionId}, '${option}')">Удалить подвопрос</button>
-                </div>
-                <div class="options" id="subOptions-${questionId}-${option}"></div>
             </div>
         `;
-
         container.appendChild(div);
 
         if (subQuestion.type === 'CHOICE') {
@@ -231,14 +234,16 @@ function addSubQuestionOption(questionId, option) {
 
 function removeSubQuestionOption(questionId, optionIndex) {
     const subQuestions = questions[questionId].subQuestions;
-    const optionKeys = Object.keys(subQuestions);
-    const option = optionKeys.find(opt => subQuestions[opt].options[optionIndex]);
 
-    if (option) {
-        subQuestions[option].options.splice(optionIndex, 1);
-        updateSubQuestionOptionsDisplay(questionId, option);
-        updateJSONDisplay();
-    }
+    Object.keys(subQuestions).forEach(optionKey => {
+        const subQuestion = subQuestions[optionKey];
+        if (subQuestion.options && subQuestion.options[optionIndex]) {
+            subQuestion.options.splice(optionIndex, 1);
+        }
+    });
+
+    updateSubQuestionsDisplay(questionId);
+    updateJSONDisplay();
 }
 
 function updateSubQuestionOptionsDisplay(questionId, option) {
@@ -251,7 +256,7 @@ function updateSubQuestionOptionsDisplay(questionId, option) {
         div.innerHTML = `
             <div class="block secondary-block answer-block">
                 <div class="labelsContainer answer-variant">
-                    <label><p class="numeration">Ответ ${optionIndex + 1}</p> <br>
+                    <label><p class="numeration">Вариант ${optionIndex + 1}</p> <br>
                         <input class="full-input" type="text" value="${option.value}" 
                         oninput="updateSubQuestionOption(${questionId}, '${option}', ${optionIndex}, this.value)">
                     </label>
@@ -275,9 +280,11 @@ function updateSubQuestionOptionsDisplay(questionId, option) {
 }
 
 function updateSubQuestionOption(questionId, option, optionIndex, value) {
+    // Сохраняем значение опции подвопроса в соответствующем месте
     questions[questionId].subQuestions[option].options[optionIndex].value = value;
     updateJSONDisplay();
 }
+
 
 function updateSubQuestionAction(questionId, option, optionIndex, action) {
     questions[questionId].subQuestions[option].options[optionIndex].action = action;
