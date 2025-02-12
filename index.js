@@ -136,19 +136,22 @@ function addOption(questionId) {
 function removeOption(questionId, optionId) {
     const question = questions[questionId];
 
-    const optionKey = `Вариант ${optionId + 1}`;
-    if (question.subQuestions && question.subQuestions[optionKey]) {
-        delete question.subQuestions[optionKey];
-    }
+    const removedKey = `Вариант ${optionId + 1}`;
+    delete question.subQuestions[removedKey];
 
     question.options.splice(optionId, 1);
 
     const updatedSubQuestions = {};
-    question.options.forEach((_, index) => {
-        const oldKey = `Вариант ${index + 2}`;
-        const newKey = `Вариант ${index + 1}`;
-        if (question.subQuestions[oldKey]) {
-            updatedSubQuestions[newKey] = question.subQuestions[oldKey];
+    Object.keys(question.subQuestions).forEach((oldKey) => {
+        const match = oldKey.match(/\d+/);
+        if (match) {
+            const oldIndex = parseInt(match[0], 10);
+            if (oldIndex > optionId + 1) { 
+                const newKey = `Вариант ${oldIndex - 1}`;
+                updatedSubQuestions[newKey] = question.subQuestions[oldKey];
+            } else {
+                updatedSubQuestions[oldKey] = question.subQuestions[oldKey];
+            }
         }
     });
 
@@ -159,6 +162,7 @@ function removeOption(questionId, optionId) {
     updateJSONDisplay();
     saveToLocalStorage();
 }
+
 
 
 function updateOption(questionId, optionId, value) {
