@@ -135,9 +135,16 @@ function addOption(questionId) {
 
 function removeOption(questionId, optionId) {
     let question = questions[questionId];
-    let removedKey = question.options[optionId].value;
-
-    delete question.subQuestions[removedKey];
+    let removedOption = question.options[optionId];
+    
+    if (question.subQuestions) {
+        
+        const optionKey = removedOption.value || `option_${optionId}`;
+        if (question.subQuestions[optionKey]) {
+            delete question.subQuestions[optionKey];
+        }
+    }
+    
     question.options.splice(optionId, 1);
 
     updateOptionsDisplay(questionId);
