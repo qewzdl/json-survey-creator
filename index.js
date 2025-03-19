@@ -215,7 +215,8 @@ function updateSubQuestionsDisplay(questionId) {
     container.innerHTML = '';
 
     const subQuestions = questions[questionId].subQuestions || {};
-    
+    const questionNumber = questionId + 1; 
+
     const sortedKeys = Object.keys(subQuestions).sort((a, b) => {
         const numA = parseInt(a.match(/\d+/)?.[0]) || 0;
         const numB = parseInt(b.match(/\d+/)?.[0]) || 0;
@@ -227,13 +228,24 @@ function updateSubQuestionsDisplay(questionId) {
         const div = document.createElement('div');
         div.classList.add('subQuestion');
         div.id = `subQuestion-${questionId}-${optionKey}`;
+        
+        let optionNumber = index + 1;
+        const options = questions[questionId].options;
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === optionKey || (optionKey.startsWith('option_') && i === parseInt(optionKey.split('_')[1]))) {
+                optionNumber = i + 1;
+                break;
+            }
+        }
+        
+        const displayName = `Вопрос ${questionNumber}/Вариант ${optionNumber}`;
 
         div.innerHTML = `
             <div class="subQuestion-container">
                 <div class="visual-block"></div>
                 <div class="block secondary-block sub-question-block">
                     <div class="labelsContainer">
-                        <div class="numeration">Подвопрос для ${optionKey}</div>
+                        <div class="numeration">Подвопрос для ${displayName}</div>
                         <input class="full-input" type="text" value="${subQuestion.text}" oninput="updateSubQuestionText(${questionId}, '${optionKey}', this.value)">
                         <label><span class="label-text">Тип подвопроса</span><br>
                             <select onchange="updateSubQuestionType(${questionId}, '${optionKey}', this.value)">
